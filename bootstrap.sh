@@ -10,14 +10,35 @@ OMZ_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
 CATPPUCCIN_BAT_THEMES_DIR="${DIR}/bat/.config/bat/themes/catppuccin"
 CATPPUCCIN_BAT_REPO="https://github.com/catppuccin/bat.git"
 
-install_debian_package() {
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  OS_ID="${ID}"
+  OS_LIKE="${ID_LIKE:-}"
+else
+  OS_ID="unknown"
+  OS_LIKE="unknown"
+fi
+
+install_package() {
   local package="$1"
   local cmd="${2:-$package}"
   if command -v "${cmd}" >/dev/null 2>&1; then
     return 0
   fi
 
-  if command -v apt-get >/dev/null 2>&1; then
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    local arch_package="${package}"
+    if [[ "${package}" == "fd-find" ]]; then
+      arch_package="fd"
+    elif [[ "${package}" == "bsdextrautils" ]]; then
+      arch_package="util-linux"
+    elif [[ "${package}" == "ripgrep" ]]; then
+      arch_package="ripgrep"
+    fi
+
+    echo "Installing ${arch_package} with pacman…"
+    sudo pacman -S --noconfirm "${arch_package}"
+  elif command -v apt-get >/dev/null 2>&1; then
     echo "Installing ${package} with apt…"
     sudo apt-get update
     sudo apt-get install -y "${package}"
@@ -137,6 +158,12 @@ install_bat() {
     return 0
   fi
 
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing bat with pacman…"
+    sudo pacman -S --noconfirm bat
+    return 0
+  fi
+
   if install_bat_with_apt; then
     ensure_bat_command
     return 0
@@ -208,6 +235,12 @@ install_zoxide() {
     return 0
   fi
 
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing zoxide with pacman…"
+    sudo pacman -S --noconfirm zoxide
+    return 0
+  fi
+
   if install_zoxide_with_apt; then
     return 0
   fi
@@ -220,13 +253,11 @@ install_manpager_tools() {
     return 0
   fi
 
-  if command -v apt-get >/dev/null 2>&1; then
-    echo "Installing bsdextrautils with apt for col…"
-    sudo apt-get update
-    sudo apt-get install -y bsdextrautils
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing util-linux with pacman…"
+    sudo pacman -S --noconfirm util-linux
   else
-    echo "Missing col; install bsdextrautils with your system package manager." >&2
-    return 1
+    install_package bsdextrautils col
   fi
 }
 
@@ -281,6 +312,12 @@ install_eza() {
     fi
   fi
 
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing eza with pacman…"
+    sudo pacman -S --noconfirm eza
+    return 0
+  fi
+
   install_eza_local
 }
 
@@ -292,6 +329,12 @@ install_nvim() {
 
   if command -v nvim >/dev/null 2>&1; then
     echo "Neovim is too old ($(nvim --version | head -n1)), upgrading…"
+  fi
+
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing neovim with pacman…"
+    sudo pacman -S --noconfirm neovim
+    return 0
   fi
 
   # Try the Neovim unstable PPA (stable PPA doesn't ship neovim for noble).
@@ -323,7 +366,7 @@ install_nvim() {
 
   # If everything failed, install the apt version (even if old) so nvim is available.
   echo "PPA and AppImage both failed. Falling back to apt (may be older)."
-  install_debian_package neovim nvim
+  install_package neovim nvim
 }
 
 # Check that Neovim version >= 0.11 (major.minor comparison).
@@ -341,6 +384,12 @@ install_go() {
     local ver
     ver="$(go version 2>/dev/null | grep -oP 'go[0-9]+\.[0-9]+' || true)"
     echo "Go is already installed: ${ver}"
+    return 0
+  fi
+
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    echo "Installing go with pacman…"
+    sudo pacman -S --noconfirm go
     return 0
   fi
 
@@ -423,23 +472,27 @@ install_node() {
 }
 
 install_bootstrap_tools() {
-  install_debian_package git
-  install_debian_package stow
-  install_debian_package less
+  install_package git
+  install_package stow
+  install_package less
   install_zoxide
   install_manpager_tools
   install_bat
-  install_debian_package fzf
-  install_debian_package ripgrep rg
-  if install_debian_package fd-find fdfind; then
-    ensure_fd_command
+  install_package fzf
+  install_package ripgrep rg
+  if [[ "${OS_ID}" == "arch" || "${OS_LIKE}" == *"arch"* ]]; then
+    install_package fd
+  else
+    if install_package fd-find fdfind; then
+      ensure_fd_command
+    fi
   fi
   install_eza
   install_nvim
   install_go
   install_node
-  install_debian_package tmux
-  install_debian_package wl-clipboard wl-copy
+  install_package tmux
+  install_package wl-clipboard wl-copy
 }
 
 install_zsh() {
@@ -448,7 +501,7 @@ install_zsh() {
     return 0
   fi
 
-  install_debian_package zsh
+  install_package zsh
 
   local zsh_path
   zsh_path="$(command -v zsh)"
