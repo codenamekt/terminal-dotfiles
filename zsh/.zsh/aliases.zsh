@@ -62,4 +62,4 @@ alias gadog='PAGER="less -F -X" git log --all --decorate --oneline --graph'
 alias dstow='cd "${DOTFILES_DIR}" && stow --dotfiles -R zsh bat vim tmux nvim fsh eza'
 
 # tmux
-alias tmuxinit='tmux new-session -d -s dev -n codedesk \; split-window -h \; new-window -n codenuc \; send-keys "ssh codenamekt-nuc" C-m \; split-window -h \; send-keys "ssh codenamekt-nuc" C-m \; new-window -n codethink \; send-keys "ssh codenamekt@192.168.0.11" C-m \; split-window -h \; send-keys "ssh codenamekt@192.168.0.11" C-m \; select-window -t codedesk \; attach-session -t dev'
+alias tmuxinit='tmux new-session -d -s dev -n ${HOST} \; split-window -h \; new-window -n codenuc \; send-keys "ssh codenamekt-nuc" C-m \; split-window -h \; send-keys "ssh codenamekt-nuc" C-m \; new-window -n codethink \; send-keys "ssh codenamekt@192.168.0.11" C-m \; split-window -h \; send-keys "ssh codenamekt@192.168.0.11" C-m \; select-window -t ${HOST} \; attach-session -t dev'

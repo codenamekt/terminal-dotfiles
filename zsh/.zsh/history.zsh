@@ -15,30 +15,30 @@ zshaddhistory() {
 
   local -a words
   words=("${(@z)line}")
-  (( ${#words} )) || return 1
+  (( ${#words[@]} )) || return 1
 
   local cmd="${words[1]}"
   local -i idx=1
 
   case "${cmd}" in
     command)
-      (( ${#words} -ge 2 )) || return 0
+      (( ${#words[@]} >= 2 )) || return 0
       cmd="${words[2]}"
       ;;
     sudo|doas)
-      (( ${#words} -ge 2 )) || return 0
+      (( ${#words[@]} >= 2 )) || return 0
       cmd="${words[2]}"
       ;;
     env)
       idx=2
-      while (( idx <= ${#words} )) && [[ "${words[idx]}" == *=* ]]; do
+      while (( idx <= ${#words[@]} )) && [[ "${words[idx]}" == *=* ]]; do
         (( idx++ ))
       done
-      (( idx <= ${#words} )) || return 0
+      (( idx <= ${#words[@]} )) || return 0
       cmd="${words[idx]}"
       ;;
     nice|time|timeout|strace)
-      (( ${#words} -ge 2 )) || return 0
+      (( ${#words[@]} >= 2 )) || return 0
       cmd="${words[2]}"
       ;;
   esac
