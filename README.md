@@ -80,8 +80,8 @@ zsh/
 ├── oh-my-zsh/                     # cloned by ./bootstrap.sh; ignored by git
 ├── custom/
 │   ├── plugins/
-│   │   └── dotfiles/
-│   │       └── dotfiles.plugin.zsh
+│   │   └── terminal-dotfiles/
+│   │       └── terminal-dotfiles.plugin.zsh
 │   └── themes/
 │       └── mytheme.zsh-theme
 └── .zsh/
@@ -95,12 +95,12 @@ zsh/
 After running `stow --dotfiles zsh`, the important links are:
 
 ```text
-~/.zshrc            -> ~/dotfiles/zsh/.zshrc
-~/.zprofile         -> ~/dotfiles/zsh/.zprofile
-~/.zshenv           -> ~/dotfiles/zsh/.zshenv
-~/.zsh              -> ~/dotfiles/zsh/.zsh
-~/.zsh/oh-my-zsh    -> ~/dotfiles/zsh/oh-my-zsh
-~/.zsh/custom       -> ~/dotfiles/zsh/custom
+~/.zshrc            -> ~/terminal-dotfiles/zsh/.zshrc
+~/.zprofile         -> ~/terminal-dotfiles/zsh/.zprofile
+~/.zshenv           -> ~/terminal-dotfiles/zsh/.zshenv
+~/.zsh              -> ~/terminal-dotfiles/zsh/.zsh
+~/.zsh/oh-my-zsh    -> ~/terminal-dotfiles/zsh/oh-my-zsh
+~/.zsh/custom       -> ~/terminal-dotfiles/zsh/custom
 ```
 
 The `.zshrc` expects Oh My Zsh at:
@@ -113,11 +113,11 @@ If that path is missing, it prints a message asking you to run `./bootstrap.sh`.
 
 ### Zsh helper commands
 
-The local `dotfiles` Oh My Zsh plugin adds a small helper:
+The local `terminal-dotfiles` Oh My Zsh plugin adds a small helper:
 
 ```bash
-dotfiles status   # show ~/dotfiles status
-dotfiles pull     # fast-forward pull ~/dotfiles
+terminal-dotfiles status   # show ~/terminal-dotfiles status
+terminal-dotfiles pull     # fast-forward pull ~/terminal-dotfiles
 dotfiles stow     # re-apply Stow links for zsh, bat, vim, tmux, nvim, fsh, and eza
 dotfiles reload   # alias for `dotfiles stow`
 ```
@@ -201,7 +201,7 @@ Most keybindings are hooked into `zsh-vi-mode` to ensure compatibility:
 | `-` | `cd -` | Jump back to the previous directory |
 | `..` | `cd ..` | Go up one directory level |
 | `...` | `cd ../..` | Go up two directory levels |
-| `dstow` | `cd ~/dotfiles && stow ...` | Re-apply GNU Stow configurations |
+| `dstow` | `cd ~/terminal-dotfiles && stow ...` | Re-apply GNU Stow configurations |
 
 #### Git Aliases
 * **`gs`**: `git status -sb` (short branch status)
