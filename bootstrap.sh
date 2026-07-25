@@ -620,7 +620,7 @@ clone_custom_plugins
 clone_catppuccin_bat_themes
 
 # Stow all known packages. Run `stow --dotfiles zsh` manually if you only want to refresh Zsh.
-for package in tmux zsh bat vim nvim fsh eza; do
+for package in tmux zsh bat vim nvim fsh eza pi; do
   stow_package "${package}"
 done
 
@@ -641,6 +641,10 @@ if command -v tmux >/dev/null 2>&1; then
   tmux kill-server 2>/dev/null || true
 fi
 
-echo "export DOTFILES_DIR=\"${DIR}\"" > "${HOME}/.zshenv.local"
+if [[ ! -f "${HOME}/.zshenv.local" ]]; then
+  echo "export DOTFILES_DIR=\"${DIR}\"" > "${HOME}/.zshenv.local"
+elif ! grep -q "DOTFILES_DIR" "${HOME}/.zshenv.local"; then
+  echo "export DOTFILES_DIR=\"${DIR}\"" >> "${HOME}/.zshenv.local"
+fi
 
 echo "Bootstrap complete."

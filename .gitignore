@@ -35,6 +35,10 @@ zsh/.zsh/custom/plugins/zsh-vi-mode/
 zsh/.zsh/custom/plugins/fast-syntax-highlighting/
 bat/.config/bat/themes/catppuccin/
 
+# Pi Coding Agent
+!pi/
+!pi/**
+
 # Shell and REPL histories.
 .zsh_history
 .zsh_history.*

@@ -1,0 +1,11 @@
+{
+  "lastChangelogVersion": "0.82.1",
+  "extensions": [
+    "extensions/litellm.ts",
+    "extensions/headroom-retrieve.ts"
+  ],
+  "theme": "dark",
+  "defaultProvider": "headroom",
+  "defaultModel": "tobiTradez/minimax-m2.7-highspeed",
+  "defaultThinkingLevel": "medium"
+}
