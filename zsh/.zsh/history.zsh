@@ -44,10 +44,10 @@ zshaddhistory() {
   esac
 
   if [[ "${cmd}" == */* ]]; then
-    [[ -x "${cmd}" ]] && return 1
-    return 0
+    [[ -x "${cmd}" ]] && return 0
+    return 1
   fi
 
-  type -- "${cmd}" >/dev/null 2>&1 && return 1
+  type -- "${cmd}" >/dev/null 2>&1 || return 1
   return 0
 }
