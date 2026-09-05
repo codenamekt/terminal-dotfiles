@@ -1,5 +1,4 @@
-# ~/.zsh/aliases.zsh — personal aliases
-# shellcheck shell=zsh
+# ~/.bash_aliases — personal aliases
 
 # Neovim alias
 alias vim='nvim'
@@ -20,4 +19,3 @@ alias gl='git log --oneline --graph --decorate --max-count=20'
 alias gp='git pull --ff-only'
 alias glog='PAGER="less -F -X" git log'
 alias gadog='PAGER="less -F -X" git log --all --decorate --oneline --graph'
-

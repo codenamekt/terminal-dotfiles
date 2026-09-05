@@ -5,10 +5,12 @@ A minimal, **Stow-based** dotfiles repository.
 ## What’s inside?
 
 - `tmux/` – `~/.tmux.conf` and related settings.
+- `bash/` – `~/.bash_aliases` personal shortcuts for Bash environments.
 - `zsh/` – `~/.zshrc`, `~/.zprofile`, `~/.zshenv`, Oh My Zsh customizations, and modular Zsh config.
 - `bat/` – `bat` pager configuration using Catppuccin Mocha.
 - `vim/` – `~/.vimrc` and Vim plugins.
-- `nvim/.config/nvim/` – Neovim configuration with Lazy.nvim, Catppuccin Mocha, LSP, Treesitter, Telescope, Git helpers, and homelab-oriented syntax extras.
+- `nvim/.config/nvim/` – Neovim configuration built on LazyVim core with modular themes, statusline, and homelab syntax extras.
+- `pi/` – Pi coding agent settings and extensions (`settings.json`).
 - `fsh/` – `fast-syntax-highlighting` custom theme configs (Catppuccin Mocha).
 - `eza/` – `eza` custom theme configurations (Catppuccin Mocha Lavender).
 - `bootstrap.sh` – installs system packages, clones Oh My Zsh, and runs Stow for known packages.
@@ -133,36 +135,36 @@ dotfiles reload   # alias for `dotfiles stow`
 
 ## Neovim
 
-Neovim is managed by [Lazy.nvim](https://github.com/folke/lazy.nvim). The first run will clone Lazy, then install the configured plugins under:
+Neovim is built on **[LazyVim](https://www.lazyvim.org/)** (`LazyVim/LazyVim`), providing a curated, high-performance IDE setup managed by [Lazy.nvim](https://github.com/folke/lazy.nvim).
 
-```text
-~/.local/share/nvim/lazy/
-```
+### Architecture & Design
+- **LazyVim Core**: LSP, Treesitter, Mason, Which-Key, Snacks, and Git Signs are powered directly by LazyVim core imports, eliminating custom boilerplate.
+- **Portability & Dynamic Theming**:
+  - **Omarchy Integration**: On Omarchy Linux, Neovim dynamically hooks into Omarchy's system theme changes via `omarchy-theme-hotreload.lua` and `theme.lua`, hot-reloading the active system palette in real time with transparent window support (`plugin/after/transparency.lua`).
+  - **Ubuntu / Standalone Linux Fallback**: When deployed on Ubuntu or non-Omarchy systems, `theme.lua` seamlessly falls back to **Catppuccin Mocha** (`catppuccin.lua`), keeping the configuration completely portable.
+- **Statusline**: Modular Lualine statusline configured in `lua/plugins/ui.lua`, supporting Zen Mode (`<leader>uz`).
+- **Homelab Tools**: Syntax and tooling extras for infrastructure and homelab workflows in `lua/plugins/homelab.lua`:
+  - Ansible syntax (`ansible-vim`)
+  - Terraform / HCL syntax (`vim-terraform`)
+  - PlantUML diagramming syntax (`plantuml-syntax`)
+- **Remote Clipboard**: Seamless OSC 52 + Wayland clipboard sharing (`remote_clipboard.lua`) across SSH, tmux, and local desktop.
 
-The configuration includes:
-
-- **Catppuccin Mocha** as the default colorscheme.
-- **LSP + Mason** with servers for Bash, Dockerfile, Go, JSON, Lua, Markdown, Python, TypeScript/JavaScript, and YAML.
-- **Treesitter** for syntax highlighting, indentation, and text objects.
-- **Telescope** for fuzzy finding, live grep, buffers, symbols, and keymaps.
-- **Git helpers** with Gitsigns and Fugitive.
-- **Editor niceties** such as Which-Key, Comment, nvim-surround, autopairs, Oil file browser, Noice, Todo comments, Trouble, Lualine, Bufferline, and Zen Mode.
-- **Homelab extras** for PlantUML/Markdown diagrams, Terraform, and Ansible-style YAML.
-
-Useful defaults:
+### Useful LazyVim Keybindings
 
 | Key | Action |
 |---|---|
-| `<Space>ff` | Find files |
-| `<Space>fg` | Live grep |
-| `<Space>fb` | Buffers |
-| `<Space>fs` | LSP document symbols |
-| `<Space>fw` | LSP workspace symbols |
-| `<Space>e` | Oil file explorer |
-| `<Space>ghs` | Stage Git hunk |
-| `<Space>ghr` | Reset Git hunk |
-| `<Space>cf` | Format buffer via LSP |
-| `<Space>xx` | Toggle diagnostics in Trouble |
+| `<Space><Space>` / `<Space>ff` | Find files |
+| `<Space>/` / `<Space>sg` | Live grep project |
+| `<Space>e` | Neo-tree file explorer |
+| `<Space>,` / `<Space>fb` | Switch buffer |
+| `<Space>uz` | Toggle Zen Mode |
+| `<Space>xx` | Toggle Trouble diagnostics |
+| `<Space>ca` | Code action |
+| `<Space>cr` | Rename symbol |
+| `[b` / `]b` | Previous / Next buffer |
+| `<Space>bd` | Delete / close current buffer |
+| `<Space>q` | Quit Neovim |
+| `<Space>w` | Save buffer |
 
 ## Cheatsheet: Keybindings, Commands, and Aliases
 
@@ -186,22 +188,14 @@ Most keybindings are hooked into `zsh-vi-mode` to ensure compatibility:
 * **`Ctrl + \`**: Toggle autosuggestions on/off.
 * **`Up` / `Down` Arrow keys**: Search shell history for commands matching the current typed prefix.
 
-### 📌 Useful Aliases
+### 📌 Useful Aliases & Shortcuts
 
 | Alias | Command | Description |
 |---|---|---|
-| `ls` | `eza --icons` | List files with Nerd Font icons |
-| `l` | `eza -F --icons` | List files with type indicators and icons |
-| `ll` | `eza -lh --icons --git` | Detailed list with permissions, sizes, and Git status |
-| `la` | `eza -lah --icons --git` | Detailed list including hidden files |
-| `tree` | `eza --tree --icons` | View directory structure as a tree |
-| `cat` | `bat` | View files with syntax highlighting |
-| `grep` | `rg --color=auto` | Ripgrep-backed colorized search |
-| `diff` | `diff --color=auto` | Colorized diff output |
-| `-` | `cd -` | Jump back to the previous directory |
-| `..` | `cd ..` | Go up one directory level |
-| `...` | `cd ../..` | Go up two directory levels |
-| `dstow` | `cd ~/terminal-dotfiles && stow ...` | Re-apply GNU Stow configurations |
+| `vim` | `nvim` | Open Neovim |
+| `cp` | `cp -i` | Safe copy (interactive prompt before overwrite) |
+| `mv` | `mv -i` | Safe move (interactive prompt before overwrite) |
+| `rm` | `rm -i` | Safe remove (interactive prompt before deletion) |
 
 #### Git Aliases
 * **`gs`**: `git status -sb` (short branch status)

@@ -6,6 +6,7 @@
 !bootstrap.sh
 
 !tmux/
+!bash/
 !vim/
 !nvim/
 !zsh/
@@ -13,6 +14,7 @@
 !fsh/
 !eza/
 !tmux/**
+!bash/**
 !vim/**
 !nvim/**
 !zsh/**

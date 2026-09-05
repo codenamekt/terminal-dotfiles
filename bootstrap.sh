@@ -620,7 +620,7 @@ clone_custom_plugins
 clone_catppuccin_bat_themes
 
 # Stow all known packages. Run `stow --dotfiles zsh` manually if you only want to refresh Zsh.
-for package in tmux zsh bat vim nvim fsh eza pi; do
+for package in tmux zsh bash bat vim nvim fsh eza pi; do
   stow_package "${package}"
 done
 
