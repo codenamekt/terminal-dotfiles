@@ -10,6 +10,24 @@
       },
       "models": [
         {
+          "id": "llama3.1:16k",
+          "name": "Llama 3.1 8B (16k Local)",
+          "reasoning": false,
+          "input": ["text"],
+          "contextWindow": 16384,
+          "maxTokens": 4096,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        },
+        {
+          "id": "llama3.1:8b",
+          "name": "Llama 3.1 8B (Local)",
+          "reasoning": false,
+          "input": ["text"],
+          "contextWindow": 4096,
+          "maxTokens": 4096,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        },
+        {
           "id": "qwen2.5-coder:32k",
           "name": "Qwen 2.5 Coder 7B (32k Local)",
           "reasoning": false,
