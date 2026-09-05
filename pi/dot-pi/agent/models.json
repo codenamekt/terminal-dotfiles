@@ -10,6 +10,24 @@
       },
       "models": [
         {
+          "id": "deepseek-r1-llama:16k",
+          "name": "DeepSeek R1 Llama 8B (16k Local)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 16384,
+          "maxTokens": 4096,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        },
+        {
+          "id": "deepseek-r1-llama:8b",
+          "name": "DeepSeek R1 Llama 8B (Local)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 4096,
+          "maxTokens": 4096,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        },
+        {
           "id": "llama3.1:16k",
           "name": "Llama 3.1 8B (16k Local)",
           "reasoning": false,
