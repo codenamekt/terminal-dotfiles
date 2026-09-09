@@ -29,12 +29,6 @@ bat/.config/bat/themes/
 tmux/.tmux/plugins/
 vim/.vim/plugged/
 nvim/.local/share/nvim/lazy/
-zsh/.zsh/oh-my-zsh/
-zsh/.zsh/.zcompdump*
-zsh/.zsh/custom/plugins/zsh-autosuggestions/
-zsh/.zsh/custom/plugins/zsh-history-substring-search/
-zsh/.zsh/custom/plugins/zsh-vi-mode/
-zsh/.zsh/custom/plugins/fast-syntax-highlighting/
 bat/.config/bat/themes/catppuccin/
 
 # Pi Coding Agent
@@ -42,8 +36,6 @@ bat/.config/bat/themes/catppuccin/
 !pi/**
 
 # Shell and REPL histories.
-.zsh_history
-.zsh_history.*
 .bash_history
 .bash_history.*
 .fish_history
@@ -52,3 +44,6 @@ bat/.config/bat/themes/catppuccin/
 .nushell/history.txt.*
 .python_history
 .node_repl_history
+
+!fish/
+!fish/**

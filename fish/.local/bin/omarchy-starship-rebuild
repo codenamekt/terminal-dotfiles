@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# omarchy-starship-rebuild — Regenerate ~/.config/starship.toml from the current
+# omarchy theme's colors.toml so the prompt (used by both bash and fish) follows
+# the active theme's color palette as closely as possible.
+#
+# This script is safe to run on every interactive shell startup: it never blocks
+# startup (always exits 0), falls back to omarchy's default starship.toml if the
+# theme system or colors.toml is unavailable, and is idempotent.
+#
+# Substitution map (line context aware via awk):
+#   error_symbol   "[✗](bold cyan)" → bold {theme.red}
+#   success_symbol "[❯](bold cyan)" → bold {theme.accent}
+#   style = "bold cyan"              → bold {theme.light_foreground}
+#   style = "italic cyan"            → italic {theme.accent}
+#   style = "cyan"                   → {theme.cyan}
+
+set -uo pipefail  # no -e: we never want to block fish startup
+
+OUTPUT="$HOME/.config/starship.toml"
+BASE="/usr/share/omarchy/config/starship.toml"
+
+# Fallback: copy omarchy's default unchanged. Always exit 0.
+fallback() {
+    if [ -f "$BASE" ]; then
+        cp -f "$BASE" "$OUTPUT"
+    fi
+    exit 0
+}
+
+[ -f "$BASE" ] || exit 0
+mkdir -p "$(dirname "$OUTPUT")"
+
+THEME_NAME="$(omarchy theme current 2>/dev/null || echo)"
+[ -n "$THEME_NAME" ] || fallback
+
+# `omarchy theme current` returns the display name (e.g. "Future City") but
+# `omarchy theme dir` is case-sensitive and expects the dir slug ("future-city").
+# Convert display → slug ourselves so the lookup works for user-installed themes
+# that have a different dir name than their display name.
+THEME_SLUG="$(printf '%s' "$THEME_NAME" | tr '[:upper:] ' '[:lower:]-')"
+
+THEME_DIR=""
+for candidate in \
+    "$HOME/.config/omarchy/themes/$THEME_SLUG" \
+    "$HOME/.config/omarchy/themes/$THEME_NAME" \
+    "$OMARCHY_PATH/themes/$THEME_SLUG" \
+    "$OMARCHY_PATH/themes/$THEME_NAME"; do
+    if [ -f "$candidate/colors.toml" ]; then
+        THEME_DIR="$candidate"
+        break
+    fi
+done
+
+[ -n "$THEME_DIR" ] || fallback
+
+COLORS_TOML="$THEME_DIR/colors.toml"
+
+# Extract a theme color value (lines of the form: key = "value").
+read_color() {
+    grep -E "^${1}[[:space:]]*=" "$COLORS_TOML" 2>/dev/null \
+        | head -1 \
+        | sed -E 's/^[^=]+=[[:space:]]*"([^"]+)".*/\1/'
+}
+
+CYAN="$(read_color cyan)"
+RED="$(read_color red)"
+LIGHT_FG="$(read_color light_foreground)"
+ACCENT="$(read_color accent)"
+
+# Required for theme-following; if any are missing, fall back to omarchy default.
+[ -n "$CYAN" ] || fallback
+[ -n "$RED" ] || fallback
+[ -n "$LIGHT_FG" ] || fallback
+[ -n "$ACCENT" ] || fallback
+
+awk \
+    -v text="$LIGHT_FG" \
+    -v char="$ACCENT" \
+    -v err="$RED" \
+    -v status="$CYAN" '
+BEGIN { in_directory = 0; dir_style_added = 0 }
+/^\[directory\]/ { in_directory = 1; print; next }
+in_directory && /^[[:space:]]*$/ && !dir_style_added { in_directory = 0; dir_style_added = 1; print "style = \"bold " text "\""; print; next }
+in_directory && /^[^[]/ && !dir_style_added { dir_style_added = 1; print "style = \"bold " text "\""; in_directory = 0 }
+in_directory && /^\[/ { in_directory = 0 }
+
+{
+    if ($0 ~ /error_symbol[[:space:]]*=/) {
+        sub(/bold cyan/, "bold " err)
+    } else if ($0 ~ /success_symbol[[:space:]]*=/) {
+        sub(/bold cyan/, "bold " char)
+    } else if ($0 ~ /style[[:space:]]*=[[:space:]]*"bold cyan"/) {
+        sub(/bold cyan/, "bold " text)
+    } else if ($0 ~ /style[[:space:]]*=[[:space:]]*"italic cyan"/) {
+        sub(/italic cyan/, "italic " char)
+    } else if ($0 ~ /style[[:space:]]*=[[:space:]]*"cyan"/) {
+        sub(/"cyan"/, "\"" status "\"")
+    }
+    print
+}
+' "$BASE" > "$OUTPUT"
