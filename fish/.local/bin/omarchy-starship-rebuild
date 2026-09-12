@@ -26,6 +26,16 @@
 #   - The trailing space inside [git_branch].format is stripped so the
 #     branch name sits flush against the git_status icon:
 #     "<branch><status>" rather than "<branch> <status>".
+#   - The [directory] section gets an explicit format = line without a
+#     trailing space (overriding starship's default). This way the path
+#     sits flush against the ">" separator. The same trailing-space fix
+#     is applied to repo_root_format.
+#   - The top-level format ends with exactly one trailing space so there
+#     is always a single space between the prompt and the cursor —
+#     regardless of whether git_status renders anything. Without this,
+#     the prompt runs flush into the cursor when no git status is shown.
+#     To avoid a double space when a git status IS shown, the git_status
+#     icons below are written without a trailing space (see next item).
 #   - git_status symbols are replaced with portable Unicode glyphs:
 #       conflicted → ✟  (cross)
 #       up_to_date → •  (dot)
@@ -133,12 +143,17 @@ in_directory && /^\[/ { in_directory = 0 }
 # rebuild and every theme switch.
 #
 # 1. Top-level format: rewrite from scratch each run, with the cross prefix,
-#    the leading space, and the ">" separator. The cross and ">" share the
-#    same foreground color so they read as one prompt-chrome pair.
+#    the leading space, the ">" separator, and a single trailing space so
+#    there's always exactly one space between the prompt and the cursor.
+#    The cross and ">" share the same foreground color so they read as
+#    one prompt-chrome pair.
 # 2. git_branch format: strip the trailing space before the closing quote so
 #    the branch name sits flush against the git_status icon.
 # 3. git_status icons: replace the omarchy Nerd Font glyphs with portable
-#    Unicode so the prompt reads cleanly on any font.
+#    Unicode so the prompt reads cleanly on any font. The replacement
+#    values intentionally omit a trailing space — the gap before the
+#    cursor comes from the top-level format (step 1), not from each
+#    icon, so a visible git_status doesn't double the gap.
 awk -v cross_color="$FOREGROUND" '
 BEGIN { section = "" }
 /^\[/ {
@@ -150,7 +165,7 @@ BEGIN { section = "" }
 section == "" && /^format = / {
     # Top-level format line. Layout:
     #   " " + [✟](bold ACCENT) + " " + [path](style) + [>](bold ACCENT) + [branch+status](style)
-    print "format = \" [✟](bold " cross_color ") [$directory]($style)[>](bold " cross_color ")[$git_branch$git_status]($style)\""
+    print "format = \" [✟](bold " cross_color ") [$directory]($style)[>](bold " cross_color ")[$git_branch$git_status]($style) \""
     next
 }
 section == "git_branch" && /^format = / {
@@ -162,7 +177,22 @@ section == "git_branch" && /^format = / {
 ' "$OUTPUT" > "${OUTPUT}.tmp" && mv "${OUTPUT}.tmp" "$OUTPUT"
 
 sed -i \
-    -e 's|^conflicted = .*|conflicted = "✟ "|' \
-    -e 's|^up_to_date = .*|up_to_date = "• "|' \
-    -e 's|^modified   = .*|modified   = "⚡ "|' \
+    -e 's|^conflicted = .*|conflicted = "✟"|' \
+    -e 's|^up_to_date = .*|up_to_date = "•"|' \
+    -e 's|^modified   = .*|modified   = "⚡"|' \
     "$OUTPUT"
+
+# Strip the trailing space inside the closing quote of any format line in
+# the [directory] section so the next module (our ">" separator) sits flush
+# against the path with no intervening space.
+sed -i -E '/^\[directory\]/,/^\[/ s@^(format = "|repo_root_format = ")(.*) "$@\1\2"@' "$OUTPUT"
+
+# Ensure [directory] has an explicit format = line. Starship's built-in
+# default ("[$path]($style)[$read_only]($read_only_style) ") has a trailing
+# space that we can't strip because it isn't in the config to begin with,
+# so we override it. Idempotent: only inserted if no format = line follows
+# the [directory] header.
+if ! sed -n '/^\[directory\]/,/^\[/{/^format = /p;}' "$OUTPUT" | grep -q '^format = '; then
+    sed -i '/^\[directory\]/a\
+format = "[$path]($style)[$read_only]($read_only_style)"' "$OUTPUT"
+fi
