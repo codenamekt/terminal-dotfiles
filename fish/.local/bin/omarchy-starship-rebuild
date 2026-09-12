@@ -13,6 +13,22 @@
 #   style = "bold cyan"              → bold {theme.light_foreground}
 #   style = "italic cyan"            → italic {theme.accent}
 #   style = "cyan"                   → {theme.cyan}
+#
+# User customizations (applied as a sed pass after the theme-color substitution):
+#   - Format prefix gains a leading "✟" (Latin cross) styled in bold
+#     {theme.bright_foreground}, matching the legacy zsh prompt from
+#     terminal-dotfiles/zsh/custom/themes/mytheme.zsh-theme.
+#     The trailing "$character" arrow is also stripped (the cross is the
+#     only prompt glyph we want).
+#   - git_status symbols are replaced with portable Unicode glyphs:
+#       conflicted → ✟  (cross)
+#       up_to_date → •  (dot)
+#       modified   → ⚡  (lightning bolt)
+#       untracked  → ?  (question mark; unchanged)
+#
+# This pass is idempotent: the format line is rewritten from scratch each
+# run (so theme color changes flow through), and the git_status sed
+# patterns are anchored to the start of each line.
 
 set -uo pipefail  # no -e: we never want to block fish startup
 
@@ -66,12 +82,15 @@ CYAN="$(read_color cyan)"
 RED="$(read_color red)"
 LIGHT_FG="$(read_color light_foreground)"
 ACCENT="$(read_color accent)"
+BRIGHT_FG="$(read_color bright_foreground)"
 
 # Required for theme-following; if any are missing, fall back to omarchy default.
 [ -n "$CYAN" ] || fallback
 [ -n "$RED" ] || fallback
 [ -n "$LIGHT_FG" ] || fallback
 [ -n "$ACCENT" ] || fallback
+# bright_foreground is optional for our customizations; fall back to light_foreground.
+[ -n "$BRIGHT_FG" ] || BRIGHT_FG="$LIGHT_FG"
 
 awk \
     -v text="$LIGHT_FG" \
@@ -99,3 +118,28 @@ in_directory && /^\[/ { in_directory = 0 }
     print
 }
 ' "$BASE" > "$OUTPUT"
+
+# User customizations — applied as an awk + sed pass so they survive every
+# rebuild and every theme switch.
+#
+# 1. Format: rewrite the format line from scratch each run. We always write
+#    the same structure (cross + directory + branch + status, no character
+#    arrow). This is idempotent and lets the cross color track the active
+#    theme's bright_foreground on every rebuild.
+# 2. git_status icons: replace the omarchy Nerd Font glyphs with portable
+#    Unicode so the prompt reads cleanly on any font.
+awk -v cross_color="$BRIGHT_FG" '
+BEGIN { in_section = 0 }
+/^\[/ { in_section = 1 }
+/^format = / && !in_section {
+    print "format = \"[✟](bold " cross_color ") [$directory$git_branch$git_status]($style)\""
+    next
+}
+{ print }
+' "$OUTPUT" > "${OUTPUT}.tmp" && mv "${OUTPUT}.tmp" "$OUTPUT"
+
+sed -i \
+    -e 's|^conflicted = .*|conflicted = "✟ "|' \
+    -e 's|^up_to_date = .*|up_to_date = "• "|' \
+    -e 's|^modified   = .*|modified   = "⚡ "|' \
+    "$OUTPUT"
