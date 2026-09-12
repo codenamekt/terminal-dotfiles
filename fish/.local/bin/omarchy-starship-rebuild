@@ -16,11 +16,12 @@
 #
 # User customizations (applied as a sed pass after the theme-color substitution):
 #   - Format prefix gains a leading "✟" (Latin cross) styled in bold
-#     {theme.accent}, matching the legacy zsh prompt from
-#     terminal-dotfiles/zsh/custom/themes/mytheme.zsh-theme.
+#     {theme.cyan}, matching the legacy zsh prompt from
+#     terminal-dotfiles/zsh/custom/themes/mytheme.zsh-theme (which used
+#     Catppuccin's teal #94e2d5 for the git prompt prefix).
 #     The cross is preceded by a leading space and the trailing
 #     "$character" arrow is stripped (the cross is the only prompt glyph).
-#   - A bold {theme.accent} ">" separator is inserted between the directory
+#   - A bold {theme.cyan} ">" separator is inserted between the directory
 #     and the git branch (no surrounding spaces) so the two read as one
 #     logical unit: "<path>><branch>".
 #   - The trailing space inside [git_branch].format is stripped so the
@@ -32,9 +33,9 @@
 #       modified   → ⚡  (lightning bolt)
 #       untracked  → ?  (question mark; unchanged)
 #
-# The accent color is the omarchy theme's primary color (read from the
-# active colors.toml), so the cross and ">" automatically stand out and
-# follow whatever theme is loaded. No hex codes are hardcoded.
+# The cyan color is read from the active colors.toml on every rebuild, so
+# the cross and ">" automatically follow whatever theme is loaded (Nord's
+# #88c0d0, Catppuccin's #94e2d5, etc.). No hex codes are hardcoded.
 #
 # This pass is idempotent: the top-level format line is rewritten from
 # scratch each run, and the git_status sed patterns are anchored to the
@@ -131,12 +132,12 @@ in_directory && /^\[/ { in_directory = 0 }
 #
 # 1. Top-level format: rewrite from scratch each run, with the cross prefix,
 #    the leading space, and the ">" separator. The cross and ">" share the
-#    same accent color so they read as one prompt-chrome pair.
+#    same cyan color so they read as one prompt-chrome pair.
 # 2. git_branch format: strip the trailing space before the closing quote so
 #    the branch name sits flush against the git_status icon.
 # 3. git_status icons: replace the omarchy Nerd Font glyphs with portable
 #    Unicode so the prompt reads cleanly on any font.
-awk -v cross_color="$ACCENT" '
+awk -v cross_color="$CYAN" '
 BEGIN { section = "" }
 /^\[/ {
     # Track which [section] header we are currently inside (empty for the
