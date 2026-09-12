@@ -32,9 +32,49 @@ alias mup='MISE_MINIMUM_RELEASE_AGE=0 mise up'
 
 # Git
 alias g='git'
+# Status
+alias gs='git status -sb'
+alias gst='git status'
+# Add
+alias ga='git add'
+alias gaa='git add --all'
+# Commit
+alias gc='git commit'
 alias gcm='git commit -m'
 alias gcam='git commit -a -m'
 alias gcad='git commit -a --amend'
+# Branch
+alias gco='git checkout'
+alias gcb='git checkout -b'
+# Diff
+alias gd='git diff'
+alias gds='git diff --staged'
+# Log
+alias gl='git log --oneline --graph --decorate --max-count=20'
+alias glog='PAGER="less -F -X" git log'
+alias gadog='PAGER="less -F -X" git log --all --decorate --oneline --graph'
+# Pull
+alias gp='git pull --ff-only'
+
+# Unix tool overrides — ported from the legacy zsh/bash aliases.zsh
+# Safer destructive operations
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+# Editors
+if command -q nvim
+    alias vim='nvim'
+end
+# Colorizing / better defaults (only override when the replacement exists)
+if command -q bat
+    alias cat='bat'
+end
+if command -q rg
+    alias grep='rg --color=auto'
+end
+alias diff='diff --color=auto'
+alias df='df -h'
+alias mkdir='mkdir -pv'
 
 # Shell functions (these need fish function syntax, not simple alias)
 # t  — tmux attach or start
