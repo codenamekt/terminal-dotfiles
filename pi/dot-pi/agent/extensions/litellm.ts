@@ -1,16 +1,46 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 
 export default async function (pi: ExtensionAPI) {
-  const apiKey = process.env.HEADROOM_API_KEY;
+  // 1. Try to read HEADROOM_API_KEY from environment
+  let apiKey = process.env.HEADROOM_API_KEY;
+
+  // 2. Fallback: Read from ~/.config/headroom/env (cross-shell, outside the dotfiles/stow tree)
+  //    File format: KEY=VALUE per line (e.g. HEADROOM_API_KEY=... or LITELLM_MASTER_KEY=...)
   if (!apiKey) {
-    console.warn("WARNING: HEADROOM_API_KEY environment variable is not set. Please set it in ~/.zshenv.local");
+    try {
+      const envFile = path.join(os.homedir(), ".config", "headroom", "env");
+      if (fs.existsSync(envFile)) {
+        const content = fs.readFileSync(envFile, "utf8");
+        const match = content.match(/^HEADROOM_API_KEY=(.+)$/m)
+          || content.match(/^LITELLM_MASTER_KEY=(.+)$/m)
+          || content.match(/^HEADROOM_INTERNAL_TOKEN=(.+)$/m);
+        if (match) {
+          apiKey = match[1].trim().replace(/^["']|["']$/g, "");
+        }
+      }
+    } catch (err) {
+      // ignore read error (perms, missing file, etc.)
+    }
+  }
+
+  // 3. No key available — bail out cleanly and use the static fallback model list.
+  //    We intentionally do NOT hardcode a fallback key here. If you need offline
+  //    access to the headroom proxy, set HEADROOM_API_KEY in ~/.config/headroom/env.
+  if (!apiKey) {
+    console.warn(
+      "headroom provider: no API key found in HEADROOM_API_KEY env var or ~/.config/headroom/env. " +
+      "Using static fallback model list (proxy features disabled)."
+    );
   }
 
   let models: any[] = [];
   try {
     const response = await fetch("http://codenamekt-nuc:8787/v1/models", {
       headers: {
-        "Authorization": `Bearer ${apiKey ?? ""}`
+        "Authorization": `Bearer ${apiKey}`
       }
     });
     if (!response.ok) {
@@ -35,7 +65,13 @@ export default async function (pi: ExtensionAPI) {
         .join(" ");
 
       const isReasoning = id.includes("reasoning") || id.includes("think") || id.includes("opus") || id.includes("deepseek-v4-pro");
-      const supportsVision = id.includes("gpt-4o") || id.includes("sonnet") || id.includes("gemini") || id.includes("opus");
+      // Models that support image input. Add new entries here when new vision-capable
+      // model families appear on the proxy. Keep in sync with the static fallback below.
+      const supportsVision = id.includes("gpt-4o")
+        || id.includes("sonnet")
+        || id.includes("gemini")
+        || id.includes("opus")
+        || id.includes("minimax");
 
       return {
         id: id,
@@ -52,8 +88,8 @@ export default async function (pi: ExtensionAPI) {
     // Fallback static models to ensure provider registration succeeds
     models = [
       {
-        id: "tobiTradez/minimax-m2.7-highspeed",
-        name: "Minimax M2.7 Highspeed",
+        id: "minimax/minimax-m2.7",
+        name: "Minimax M2.7",
         reasoning: false,
         input: ["text"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -61,10 +97,10 @@ export default async function (pi: ExtensionAPI) {
         maxTokens: 4096,
       },
       {
-        id: "tobiTradez/minimax-m3",
+        id: "minimax/minimax-m3",
         name: "Minimax M3",
         reasoning: false,
-        input: ["text"],
+        input: ["text", "image"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         contextWindow: 128000,
         maxTokens: 4096,
