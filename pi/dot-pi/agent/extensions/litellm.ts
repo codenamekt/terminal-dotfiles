@@ -64,14 +64,41 @@ export default async function (pi: ExtensionAPI) {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
 
-      const isReasoning = id.includes("reasoning") || id.includes("think") || id.includes("opus") || id.includes("deepseek-v4-pro");
+      const lower = id.toLowerCase();
+      const isReasoning = lower.includes("reasoning")
+        || lower.includes("think")
+        || lower.includes("opus")
+        || lower.includes("deepseek-v4-pro")
+        || lower.includes("minimax")
+        || lower.includes("r1");
+
       // Models that support image input. Add new entries here when new vision-capable
       // model families appear on the proxy. Keep in sync with the static fallback below.
-      const supportsVision = id.includes("gpt-4o")
-        || id.includes("sonnet")
-        || id.includes("gemini")
-        || id.includes("opus")
-        || id.includes("minimax");
+      const supportsVision = lower.includes("gpt-4o")
+        || lower.includes("sonnet")
+        || lower.includes("gemini")
+        || lower.includes("opus")
+        || lower.includes("minimax");
+
+      let contextWindow = 128000;
+      let maxTokens = 16384;
+
+      if (lower.includes("minimax")) {
+        contextWindow = 1000000;
+        maxTokens = 65536;
+      } else if (lower.includes("gemini")) {
+        contextWindow = 1000000;
+        maxTokens = 65536;
+      } else if (lower.includes("sonnet") || lower.includes("opus") || lower.includes("claude")) {
+        contextWindow = 200000;
+        maxTokens = 64000;
+      } else if (lower.includes("deepseek")) {
+        contextWindow = 128000;
+        maxTokens = 32768;
+      } else if (lower.includes("gpt-4o")) {
+        contextWindow = 128000;
+        maxTokens = 16384;
+      }
 
       return {
         id: id,
@@ -79,8 +106,8 @@ export default async function (pi: ExtensionAPI) {
         reasoning: isReasoning,
         input: supportsVision ? ["text", "image"] : ["text"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        contextWindow: 128000,
-        maxTokens: 4096,
+        contextWindow: contextWindow,
+        maxTokens: maxTokens,
       };
     });
   } catch (err) {
@@ -90,20 +117,20 @@ export default async function (pi: ExtensionAPI) {
       {
         id: "minimax/minimax-m2.7",
         name: "Minimax M2.7",
-        reasoning: false,
+        reasoning: true,
         input: ["text"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        contextWindow: 128000,
-        maxTokens: 4096,
+        contextWindow: 1000000,
+        maxTokens: 65536,
       },
       {
         id: "minimax/minimax-m3",
         name: "Minimax M3",
-        reasoning: false,
+        reasoning: true,
         input: ["text", "image"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        contextWindow: 128000,
-        maxTokens: 4096,
+        contextWindow: 1000000,
+        maxTokens: 65536,
       },
       {
         id: "tobiTradez/gemini-3.5-flash",
@@ -111,8 +138,8 @@ export default async function (pi: ExtensionAPI) {
         reasoning: false,
         input: ["text", "image"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        contextWindow: 128000,
-        maxTokens: 4096,
+        contextWindow: 1000000,
+        maxTokens: 65536,
       },
       {
         id: "tobiTradez/deepseek-v4-pro",
@@ -121,7 +148,7 @@ export default async function (pi: ExtensionAPI) {
         input: ["text"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         contextWindow: 128000,
-        maxTokens: 4096,
+        maxTokens: 32768,
       }
     ];
   }
