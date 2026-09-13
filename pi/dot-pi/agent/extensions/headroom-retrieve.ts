@@ -10,9 +10,33 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+
+function getApiKey(): string {
+  let key = process.env.HEADROOM_API_KEY;
+  if (!key) {
+    try {
+      const envFile = path.join(os.homedir(), ".config", "headroom", "env");
+      if (fs.existsSync(envFile)) {
+        const content = fs.readFileSync(envFile, "utf8");
+        const match = content.match(/^HEADROOM_API_KEY=(.+)$/m)
+          || content.match(/^LITELLM_MASTER_KEY=(.+)$/m)
+          || content.match(/^HEADROOM_INTERNAL_TOKEN=(.+)$/m);
+        if (match) {
+          key = match[1].trim().replace(/^["']|["']$/g, "");
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+  return key ?? "";
+}
 
 const HEADROOM_BASE_URL = "http://codenamekt-nuc:8787";
-const HEADROOM_API_KEY = process.env.HEADROOM_API_KEY ?? "";
+const HEADROOM_API_KEY = getApiKey();
 
 const RetrieveParams = Type.Object({
   hash: Type.String({ 
