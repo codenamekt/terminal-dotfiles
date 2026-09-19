@@ -182,6 +182,13 @@ sed -i \
     -e 's|^modified   = .*|modified   = "⚡"|' \
     "$OUTPUT"
 
+# Strip the trailing space inside the closing quote of git_status symbol
+# values that omarchy's default ships with one (untracked, ahead, behind,
+# diverged). The top-level format already ends with one space; adding another
+# inside a symbol value produces a double space between the prompt and the
+# cursor whenever that status is shown.
+sed -i -E '/^(untracked|ahead|behind|diverged)[[:space:]]*=/ s/ "$/"/' "$OUTPUT"
+
 # Strip the trailing space inside the closing quote of any format line in
 # the [directory] section so the next module (our ">" separator) sits flush
 # against the path with no intervening space.
