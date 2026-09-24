@@ -1,13 +1,15 @@
 {
   "theme": "omarchy-system",
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "0.87.1",
   "defaultProvider": "headroom",
   "defaultModel": "minimax/minimax-m3",
   "extensions": [
     "extensions/litellm.ts",
-    "extensions/headroom-retrieve.ts"
+    "extensions/headroom-retrieve.ts",
+    "/home/codenamekt/Work/pi-laya-router/extension/index.ts"
   ],
   "packages": [
-    "npm:pi-agy"
+    "npm:pi-agy",
+    "npm:pi-agent-browser-native"
   ]
 }

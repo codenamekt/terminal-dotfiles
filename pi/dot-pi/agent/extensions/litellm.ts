@@ -41,7 +41,9 @@ export default async function (pi: ExtensionAPI) {
     const response = await fetch("http://codenamekt-nuc:8787/v1/models", {
       headers: {
         "Authorization": `Bearer ${apiKey}`
-      }
+      },
+      // Startup blocks on this fetch; a stalled proxy must not hang Pi.
+      signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
